@@ -1,20 +1,19 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# LetterboxdCompare
 
-# Run and deploy your AI Studio app
+Welcome to **LetterboxdCompare** — your ultimate tool to compare Letterboxd profiles effortlessly!
 
-This contains everything you need to run your app locally.
+## 🚀 What is LetterboxdCompare?
 
-View your app in AI Studio: https://ai.studio/apps/drive/1fbhUuqv7ckUHjQdsezJYOm5MMkXrD-F0
+LetterboxdCompare is a sleek, fast, and easy-to-use app that lets you compare your movie tastes, watch history, and ratings with friends or fellow cinephiles on Letterboxd. Discover overlaps, differences, and hidden gems together!
 
-## Run Locally
+## Features
 
-**Prerequisites:**  Node.js
+- **User Profile Comparison**: Quickly see similarities and differences between two Letterboxd accounts.
+- **Insightful Visuals**: Crisp, clear UI powered by modern web technologies.
+- **Powered by Google Gemini API**: Bringing AI muscle to enhance your comparison experience.
+- **Developer Friendly**: Open-source and easy to run locally or deploy.
 
+## Try it out
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Check out the live app here: [letterboxd-compare.vercel.app](https://letterboxd-compare.vercel.app)
+
