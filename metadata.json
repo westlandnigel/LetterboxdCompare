@@ -1,0 +1,5 @@
+{
+  "name": "Letterboxd Compare",
+  "description": "A tool to compare two Letterboxd users' film libraries. It finds movies that one user has seen and rated, but the other has not, and sorts them by the first user's rating.",
+  "requestFramePermissions": []
+}
