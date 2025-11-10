@@ -9,6 +9,7 @@ import Loader from './components/Loader';
 const App: React.FC = () => {
   const [userA, setUserA] = useState<string>('');
   const [userB, setUserB] = useState<string>('');
+  const [selectedGenre, setSelectedGenre] = useState<string>('any'); // New state for genre
   const [recommendations, setRecommendations] = useState<UserAMovie[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,10 +31,10 @@ const App: React.FC = () => {
     setProgress({ user: userA, message: 'Starting...', currentPage: 0, totalPages: 0 });
 
     try {
-      const results = await runComparison(userA.trim(), userB.trim(), setProgress);
+      const results = await runComparison(userA.trim(), userB.trim(), selectedGenre, setProgress);
       setRecommendations(results);
       if(results.length === 0) {
-        setError(`No unique rated films found for ${userA} that ${userB} hasn't seen.`);
+        setError(`No unique rated films found for ${userA} that ${userB} hasn't seen in the selected genre.`);
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -45,7 +46,7 @@ const App: React.FC = () => {
       setIsLoading(false);
       setProgress(null);
     }
-  }, [userA, userB]);
+  }, [userA, userB, selectedGenre]);
 
   return (
     <div className="min-h-screen bg-[#14181C] text-[#9ab] font-sans">
@@ -62,6 +63,8 @@ const App: React.FC = () => {
               setUserA={setUserA}
               userB={userB}
               setUserB={setUserB}
+              selectedGenre={selectedGenre}
+              setSelectedGenre={setSelectedGenre}
               onCompare={handleCompare}
               isLoading={isLoading}
             />

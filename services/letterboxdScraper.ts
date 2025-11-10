@@ -13,7 +13,8 @@ const fetchPage = async (url: string): Promise<Document> => {
   if (!response.ok) {
     if (response.status === 404) {
       const urlParts = url.split('/');
-      const username = urlParts[3];
+      const usernameIndex = urlParts.indexOf('letterboxd.com') + 1;
+      const username = urlParts[usernameIndex];
       throw new Error(`Could not find Letterboxd user '${username}'. Please check the username and try again.`);
     }
     throw new Error(`Failed to fetch ${url}. Status: ${response.status}`);
@@ -84,26 +85,29 @@ const parseUserBFilms = (doc: Document): string[] => {
 
 const scrapeUserPages = async <T,>(
   username: string,
-  filmsPath: string,
+  filmsPath: string, // e.g., 'films' or 'films/by/entry-rating'
   parseFunction: (doc: Document) => T[],
   onProgress: (update: ProgressUpdate) => void,
   progressMessage: string,
+  genre: string, // New genre parameter
   options: {
     firstPageDoc?: Document,
     progressOverride?: { totalPages: number, pageOffset: number }
   } = {}
 ): Promise<T[]> => {
+  const genrePath = genre === 'any' ? '' : `/genre/${genre}`;
+  
   let firstPageDoc: Document;
   if (options.firstPageDoc) {
     firstPageDoc = options.firstPageDoc;
   } else {
-    const firstPageUrl = `${BASE_URL}/${username}/${filmsPath}/page/1/`;
+    const firstPageUrl = `${BASE_URL}/${username}/${filmsPath}${genrePath}/page/1/`;
     onProgress({ user: username, message: `Analyzing ${username}'s library...`, currentPage: 0, totalPages: 0 });
     try {
       firstPageDoc = await fetchPage(firstPageUrl);
     } catch (e) {
       try {
-        const baseUrl = `${BASE_URL}/${username}/${filmsPath}/`;
+        const baseUrl = `${BASE_URL}/${username}/${filmsPath}${genrePath}/`;
         firstPageDoc = await fetchPage(baseUrl);
       } catch {
         throw e;
@@ -124,7 +128,7 @@ const scrapeUserPages = async <T,>(
     return allResults;
   }
   
-  const pageUrlsToFetch = Array.from({ length: localTotalPages - 1 }, (_, i) => `${BASE_URL}/${username}/${filmsPath}/page/${i + 2}/`);
+  const pageUrlsToFetch = Array.from({ length: localTotalPages - 1 }, (_, i) => `${BASE_URL}/${username}/${filmsPath}${genrePath}/page/${i + 2}/`);
   
   for (let i = 0; i < pageUrlsToFetch.length; i += CONCURRENCY_LIMIT) {
     const batchUrls = pageUrlsToFetch.slice(i, i + CONCURRENCY_LIMIT);
@@ -154,20 +158,24 @@ const scrapeUserPages = async <T,>(
 export const runComparison = async (
   userA: string,
   userB: string,
+  genre: string, // New genre parameter
   onProgress: (update: ProgressUpdate) => void
 ): Promise<UserAMovie[]> => {
+  const genrePath = genre === 'any' ? '' : `/genre/${genre}`;
+
   // Step 1: Scrape User A's rated films, showing its own progress bar.
-  const userAMovies = await scrapeUserPages(userA, 'films/by/entry-rating', parseUserARatings, onProgress, `Scraping ${userA}...`);
+  // The firstPageDoc is not needed here as it's the first call.
+  const userAMovies = await scrapeUserPages(userA, 'films/by/entry-rating', parseUserARatings, onProgress, `Scraping ${userA}...`, genre);
 
   // Step 2: Prepare for User B. Get total page counts for a combined progress bar.
   onProgress({ user: userB, message: `Analyzing ${userB}'s library...`, currentPage: 0, totalPages: 0 });
   
-  const userBWatchedFirstPageUrl = `${BASE_URL}/${userB}/films/page/1/`;
-  const userBRatedFirstPageUrl = `${BASE_URL}/${userB}/films/by/entry-rating/page/1/`;
+  const userBWatchedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePath}/page/1/`;
+  const userBRatedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePath}/by/entry-rating/page/1/`;
   
   const [watchedFirstPageDoc, ratedFirstPageDoc] = await Promise.all([
-      fetchPage(userBWatchedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films/`)),
-      fetchPage(userBRatedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films/by/entry-rating/`))
+      fetchPage(userBWatchedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePath}/`)),
+      fetchPage(userBRatedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePath}/by/entry-rating/`))
   ]);
   
   const totalWatchedPages = getLastPage(watchedFirstPageDoc);
@@ -181,6 +189,7 @@ export const runComparison = async (
     parseUserBFilms,
     onProgress,
     `Scraping ${userB}...`,
+    genre, // Pass genre
     {
       firstPageDoc: watchedFirstPageDoc,
       progressOverride: { totalPages: totalBPages, pageOffset: 0 }
@@ -194,6 +203,7 @@ export const runComparison = async (
     parseUserBFilms,
     onProgress,
     `Scraping ${userB}...`,
+    genre, // Pass genre
     {
       firstPageDoc: ratedFirstPageDoc,
       progressOverride: { totalPages: totalBPages, pageOffset: totalWatchedPages }
