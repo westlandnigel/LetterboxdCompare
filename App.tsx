@@ -113,7 +113,19 @@ const App: React.FC = () => {
         </main>
         
         <footer className="text-center mt-12 text-xs text-gray-500">
-          <p>A recreation of the original lb-compare tool. All data is scraped from Letterboxd.</p>
+          <p>
+            A recreation of the original lb-compare tool. All data is scraped from Letterboxd. 
+            I won't ask for donations or anything else, but a follow to my{' '}
+            <a 
+              href="https://letterboxd.com/nigelllj/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[#00E054] hover:underline"
+            >
+              Letterboxd account, nigelllj
+            </a>
+            , would be nice!
+          </p>
         </footer>
       </div>
     </div>
