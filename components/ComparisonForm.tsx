@@ -7,6 +7,8 @@ interface ComparisonFormProps {
   setUserB: (value: string) => void;
   selectedGenre: string;
   setSelectedGenre: (value: string) => void;
+  comparisonMode: 'compare' | 'bothSeen'; // New prop
+  setComparisonMode: (mode: 'compare' | 'bothSeen') => void; // New prop
   onCompare: () => void;
   isLoading: boolean;
 }
@@ -34,7 +36,7 @@ const genres = [
   { value: 'western', label: 'Western' },
 ];
 
-const ComparisonForm: React.FC<ComparisonFormProps> = ({ userA, setUserA, userB, setUserB, selectedGenre, setSelectedGenre, onCompare, isLoading }) => {
+const ComparisonForm: React.FC<ComparisonFormProps> = ({ userA, setUserA, userB, setUserB, selectedGenre, setSelectedGenre, comparisonMode, setComparisonMode, onCompare, isLoading }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onCompare();
@@ -42,6 +44,36 @@ const ComparisonForm: React.FC<ComparisonFormProps> = ({ userA, setUserA, userB,
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 md:items-end">
+      {/* Comparison Mode Selector */}
+      <div className="col-span-3 mb-4 flex justify-center space-x-4">
+        <label htmlFor="modeCompare" className="flex items-center cursor-pointer text-[#9ab] hover:text-white transition-colors duration-200">
+          <input
+            type="radio"
+            id="modeCompare"
+            name="comparisonMode"
+            value="compare"
+            checked={comparisonMode === 'compare'}
+            onChange={() => setComparisonMode('compare')}
+            disabled={isLoading}
+            className="form-radio h-4 w-4 text-[#00E054] bg-transparent border-gray-500 focus:ring-[#00E054] cursor-pointer"
+          />
+          <span className="ml-2">Compare (A vs B)</span>
+        </label>
+        <label htmlFor="modeBothSeen" className="flex items-center cursor-pointer text-[#9ab] hover:text-white transition-colors duration-200">
+          <input
+            type="radio"
+            id="modeBothSeen"
+            name="comparisonMode"
+            value="bothSeen"
+            checked={comparisonMode === 'bothSeen'}
+            onChange={() => setComparisonMode('bothSeen')}
+            disabled={isLoading}
+            className="form-radio h-4 w-4 text-[#00E054] bg-transparent border-gray-500 focus:ring-[#00E054] cursor-pointer"
+          />
+          <span className="ml-2">Both Seen (A & B)</span>
+        </label>
+      </div>
+
       <div className="flex-1">
         <label htmlFor="userA" className="block text-sm font-medium mb-1 text-[#9ab]">User A (has seen)</label>
         <input

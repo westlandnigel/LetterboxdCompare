@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { runComparison } from './services/letterboxdScraper';
-import type { UserAMovie, ProgressUpdate } from './types';
+import { runComparison, runBothSeenComparison } from './services/letterboxdScraper';
+import type { UserAMovie, SharedMovie, ProgressUpdate } from './types';
 import ComparisonForm from './components/ComparisonForm';
 import ResultsDisplay from './components/ResultsDisplay';
+import SharedResultsDisplay from './components/SharedResultsDisplay'; // New import
 import Header from './components/Header';
 import Loader from './components/Loader';
 
@@ -10,7 +11,9 @@ const App: React.FC = () => {
   const [userA, setUserA] = useState<string>('');
   const [userB, setUserB] = useState<string>('');
   const [selectedGenre, setSelectedGenre] = useState<string>('any'); // New state for genre
+  const [comparisonMode, setComparisonMode] = useState<'compare' | 'bothSeen'>('compare'); // New state for comparison mode
   const [recommendations, setRecommendations] = useState<UserAMovie[]>([]);
+  const [sharedMovies, setSharedMovies] = useState<SharedMovie[]>([]); // New state for shared movies
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressUpdate | null>(null);
@@ -27,14 +30,23 @@ const App: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
-    setRecommendations([]);
+    setRecommendations([]); // Clear old results
+    setSharedMovies([]);    // Clear old results
     setProgress({ user: userA, message: 'Starting...', currentPage: 0, totalPages: 0 });
 
     try {
-      const results = await runComparison(userA.trim(), userB.trim(), selectedGenre, setProgress);
-      setRecommendations(results);
-      if(results.length === 0) {
-        setError(`No unique rated films found for ${userA} that ${userB} hasn't seen in the selected genre.`);
+      if (comparisonMode === 'compare') {
+        const results = await runComparison(userA.trim(), userB.trim(), selectedGenre, setProgress);
+        setRecommendations(results);
+        if(results.length === 0) {
+          setError(`No unique rated films found for ${userA} that ${userB} hasn't seen in the selected genre.`);
+        }
+      } else { // comparisonMode === 'bothSeen'
+        const results = await runBothSeenComparison(userA.trim(), userB.trim(), selectedGenre, setProgress);
+        setSharedMovies(results);
+        if(results.length === 0) {
+          setError(`No common rated films found between ${userA} and ${userB} in the selected genre.`);
+        }
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -46,7 +58,7 @@ const App: React.FC = () => {
       setIsLoading(false);
       setProgress(null);
     }
-  }, [userA, userB, selectedGenre]);
+  }, [userA, userB, selectedGenre, comparisonMode]);
 
   return (
     <div className="min-h-screen bg-[#14181C] text-[#9ab] font-sans">
@@ -56,7 +68,17 @@ const App: React.FC = () => {
         <main>
           <div className="bg-[#2C3440] p-6 rounded-lg shadow-lg mb-8">
             <p className="mb-4 text-center">
-              Find movies that <strong className="text-white">{userA || 'User A'}</strong> has seen and rated, but <strong className="text-white">{userB || 'User B'}</strong> has not.
+              {comparisonMode === 'compare'
+                ? `Find movies that `
+                : `Find movies that `}
+              <strong className="text-white">{userA || 'User A'}</strong>
+              {comparisonMode === 'compare'
+                ? ` has seen and rated, but `
+                : ` and `}
+              <strong className="text-white">{userB || 'User B'}</strong>
+              {comparisonMode === 'compare'
+                ? ` has not.`
+                : ` have both seen and rated.`}
             </p>
             <ComparisonForm
               userA={userA}
@@ -65,6 +87,8 @@ const App: React.FC = () => {
               setUserB={setUserB}
               selectedGenre={selectedGenre}
               setSelectedGenre={setSelectedGenre}
+              comparisonMode={comparisonMode}
+              setComparisonMode={setComparisonMode}
               onCompare={handleCompare}
               isLoading={isLoading}
             />
@@ -79,8 +103,12 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {!isLoading && recommendations.length > 0 && (
+          {!isLoading && comparisonMode === 'compare' && recommendations.length > 0 && (
             <ResultsDisplay recommendations={recommendations} userA={userA} />
+          )}
+
+          {!isLoading && comparisonMode === 'bothSeen' && sharedMovies.length > 0 && (
+            <SharedResultsDisplay sharedMovies={sharedMovies} userA={userA} userB={userB} />
           )}
         </main>
         

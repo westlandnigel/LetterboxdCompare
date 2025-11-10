@@ -1,4 +1,4 @@
-import type { UserAMovie, ProgressUpdate } from '../types';
+import type { UserAMovie, ProgressUpdate, SharedMovie } from '../types';
 
 declare const puter: any;
 
@@ -42,6 +42,7 @@ const getLastPage = (doc: Document): number => {
   return isNaN(pageNum) ? 1 : pageNum;
 };
 
+// Existing parser for User A's ratings (no poster needed in original use case)
 const parseUserARatings = (doc: Document): UserAMovie[] => {
   const movies: UserAMovie[] = [];
   doc.querySelectorAll('li.griditem').forEach(item => {
@@ -71,6 +72,40 @@ const parseUserARatings = (doc: Document): UserAMovie[] => {
   return movies;
 };
 
+// New parser for films with rating and poster URL for "Both Seen" mode
+const parseFilmsWithRatingAndPoster = (doc: Document): { url: string; title: string; rating: number; posterUrl: string }[] => {
+  const movies: { url: string; title: string; rating: number; posterUrl: string }[] = [];
+  doc.querySelectorAll('li.griditem').forEach(item => {
+    const reactComponent = item.querySelector('div.react-component');
+    if (!reactComponent) return;
+
+    const itemLink = reactComponent.getAttribute('data-item-link');
+    const title = reactComponent.getAttribute('data-item-name') || 'Unknown Title';
+
+    if (!itemLink) return;
+    const url = BASE_URL + itemLink;
+
+    const ratingSpan = item.querySelector('p.poster-viewingdata .rating');
+    let rating = 0;
+    if (ratingSpan) {
+      const ratingClass = Array.from(ratingSpan.classList).find(c => c.startsWith('rated-'));
+      if (ratingClass) {
+        rating = parseInt(ratingClass.replace('rated-', ''), 10) / 2;
+      }
+    }
+
+    const posterImg = item.querySelector('.poster img');
+    const posterUrl = posterImg?.getAttribute('src') || posterImg?.getAttribute('data-prefill-src') || '';
+
+    if (rating > 0) {
+      // Clean up poster URL to ensure it's a consistent size if possible (e.g., -0-230-0-345-)
+      const cleanedPosterUrl = posterUrl ? posterUrl.replace(/-\d+-\d+-\d+-\d+-/, '-0-230-0-345-') : '';
+      movies.push({ url, title, rating, posterUrl: cleanedPosterUrl });
+    }
+  });
+  return movies;
+};
+
 const parseUserBFilms = (doc: Document): string[] => {
   const urls: string[] = [];
   doc.querySelectorAll('li.griditem').forEach(item => {
@@ -95,19 +130,20 @@ const scrapeUserPages = async <T,>(
     progressOverride?: { totalPages: number, pageOffset: number }
   } = {}
 ): Promise<T[]> => {
-  const genrePath = genre === 'any' ? '' : `/genre/${genre}`;
+  const genrePathSegment = genre === 'any' ? '' : `/genre/${genre}`;
   
   let firstPageDoc: Document;
   if (options.firstPageDoc) {
     firstPageDoc = options.firstPageDoc;
   } else {
-    const firstPageUrl = `${BASE_URL}/${username}/${filmsPath}${genrePath}/page/1/`;
+    const firstPageUrl = `${BASE_URL}/${username}/${filmsPath}${genrePathSegment}/page/1/`;
     onProgress({ user: username, message: `Analyzing ${username}'s library...`, currentPage: 0, totalPages: 0 });
     try {
       firstPageDoc = await fetchPage(firstPageUrl);
     } catch (e) {
       try {
-        const baseUrl = `${BASE_URL}/${username}/${filmsPath}${genrePath}/`;
+        // Fallback for profiles where page/1 might not exist or be redirected
+        const baseUrl = `${BASE_URL}/${username}/${filmsPath}${genrePathSegment}/`;
         firstPageDoc = await fetchPage(baseUrl);
       } catch {
         throw e;
@@ -128,7 +164,7 @@ const scrapeUserPages = async <T,>(
     return allResults;
   }
   
-  const pageUrlsToFetch = Array.from({ length: localTotalPages - 1 }, (_, i) => `${BASE_URL}/${username}/${filmsPath}${genrePath}/page/${i + 2}/`);
+  const pageUrlsToFetch = Array.from({ length: localTotalPages - 1 }, (_, i) => `${BASE_URL}/${username}/${filmsPath}${genrePathSegment}/page/${i + 2}/`);
   
   for (let i = 0; i < pageUrlsToFetch.length; i += CONCURRENCY_LIMIT) {
     const batchUrls = pageUrlsToFetch.slice(i, i + CONCURRENCY_LIMIT);
@@ -161,21 +197,21 @@ export const runComparison = async (
   genre: string, // New genre parameter
   onProgress: (update: ProgressUpdate) => void
 ): Promise<UserAMovie[]> => {
-  const genrePath = genre === 'any' ? '' : `/genre/${genre}`;
+  const genrePathSegment = genre === 'any' ? '' : `/genre/${genre}`;
 
   // Step 1: Scrape User A's rated films, showing its own progress bar.
   // The firstPageDoc is not needed here as it's the first call.
-  const userAMovies = await scrapeUserPages(userA, 'films/by/entry-rating', parseUserARatings, onProgress, `Scraping ${userA}...`, genre);
+  const userAMovies = await scrapeUserPages(userA, 'films/by/entry-rating', parseUserARatings, onProgress, `Scraping ${userA}'s rated films...`, genre);
 
   // Step 2: Prepare for User B. Get total page counts for a combined progress bar.
   onProgress({ user: userB, message: `Analyzing ${userB}'s library...`, currentPage: 0, totalPages: 0 });
   
-  const userBWatchedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePath}/page/1/`;
-  const userBRatedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePath}/by/entry-rating/page/1/`;
+  const userBWatchedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePathSegment}/page/1/`;
+  const userBRatedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePathSegment}/by/entry-rating/page/1/`;
   
   const [watchedFirstPageDoc, ratedFirstPageDoc] = await Promise.all([
-      fetchPage(userBWatchedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePath}/`)),
-      fetchPage(userBRatedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePath}/by/entry-rating/`))
+      fetchPage(userBWatchedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePathSegment}/`)),
+      fetchPage(userBRatedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePathSegment}/by/entry-rating/`))
   ]);
   
   const totalWatchedPages = getLastPage(watchedFirstPageDoc);
@@ -188,7 +224,7 @@ export const runComparison = async (
     'films',
     parseUserBFilms,
     onProgress,
-    `Scraping ${userB}...`,
+    `Scraping ${userB}'s watched films...`,
     genre, // Pass genre
     {
       firstPageDoc: watchedFirstPageDoc,
@@ -202,7 +238,7 @@ export const runComparison = async (
     'films/by/entry-rating',
     parseUserBFilms,
     onProgress,
-    `Scraping ${userB}...`,
+    `Scraping ${userB}'s rated films...`,
     genre, // Pass genre
     {
       firstPageDoc: ratedFirstPageDoc,
@@ -217,4 +253,48 @@ export const runComparison = async (
   recommendations.sort((a, b) => b.rating - a.rating || a.title.localeCompare(b.title));
 
   return recommendations;
+};
+
+export const runBothSeenComparison = async (
+  userA: string,
+  userB: string,
+  genre: string,
+  onProgress: (update: ProgressUpdate) => void
+): Promise<SharedMovie[]> => {
+  const filmsPath = 'films/by/entry-rating'; // Only rated films for this comparison
+
+  // Step 1: Scrape User A's rated films with posters
+  const userARatedFilms = await scrapeUserPages(userA, filmsPath, parseFilmsWithRatingAndPoster, onProgress, `Scraping ${userA}'s rated films...`, genre);
+
+  // Step 2: Scrape User B's rated films with posters
+  const userBRatedFilms = await scrapeUserPages(userB, filmsPath, parseFilmsWithRatingAndPoster, onProgress, `Scraping ${userB}'s rated films...`, genre);
+
+  // Step 3: Find common movies and combine data
+  onProgress({ user: '', message: 'Comparing libraries...', currentPage: 0, totalPages: 0 });
+  
+  const userAFilmMap = new Map<string, typeof userARatedFilms[0]>();
+  userARatedFilms.forEach(movie => userAFilmMap.set(movie.url, movie));
+
+  const sharedMovies: SharedMovie[] = [];
+
+  userBRatedFilms.forEach(movieB => {
+    const movieA = userAFilmMap.get(movieB.url);
+    if (movieA) {
+      // Movie found in both lists
+      sharedMovies.push({
+        url: movieA.url,
+        title: movieA.title,
+        userARating: movieA.rating,
+        userAPosterUrl: movieA.posterUrl,
+        userBRating: movieB.rating,
+        userBPosterUrl: movieB.posterUrl,
+        combinedRating: (movieA.rating + movieB.rating) / 2, // Average rating
+      });
+    }
+  });
+
+  // Default sort by combined rating
+  sharedMovies.sort((a, b) => b.combinedRating - a.combinedRating || a.title.localeCompare(b.title));
+
+  return sharedMovies;
 };

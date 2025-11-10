@@ -6,7 +6,8 @@ interface ResultsDisplayProps {
   userA: string;
 }
 
-const StarIcon: React.FC<{ fill: 'full' | 'half' | 'none' }> = ({ fill }) => (
+// Renamed StarIcon to RatingStarIcon to avoid potential conflicts if other star icons are introduced
+export const RatingStarIcon: React.FC<{ fill: 'full' | 'half' | 'none' }> = ({ fill }) => (
     <div className="relative w-5 h-5">
         {/* Background star (empty) */}
         <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
@@ -23,15 +24,15 @@ const StarIcon: React.FC<{ fill: 'full' | 'half' | 'none' }> = ({ fill }) => (
     </div>
 );
 
-const RatingStars: React.FC<{ rating: number }> = ({ rating }) => {
+export const RatingStars: React.FC<{ rating: number }> = ({ rating }) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     if (rating >= i) {
-      stars.push(<StarIcon key={i} fill='full' />);
+      stars.push(<RatingStarIcon key={i} fill='full' />);
     } else if (rating >= i - 0.5) {
-      stars.push(<StarIcon key={i} fill='half' />);
+      stars.push(<RatingStarIcon key={i} fill='half' />);
     } else {
-      stars.push(<StarIcon key={i} fill='none' />);
+      stars.push(<RatingStarIcon key={i} fill='none' />);
     }
   }
   return <div className="flex items-center space-x-0.5">{stars}</div>;
