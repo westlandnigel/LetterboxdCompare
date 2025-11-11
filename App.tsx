@@ -114,17 +114,8 @@ const App: React.FC = () => {
         
         <footer className="text-center mt-12 text-xs text-gray-500">
           <p>
-            A recreation of the original lb-compare tool. All data is scraped from Letterboxd. 
-            I won't ask for donations or anything else, but a follow to my{' '}
-            <a 
-              href="https://letterboxd.com/nigelllj/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#00E054] hover:underline"
-            >
-              Letterboxd account, nigelllj
-            </a>
-            , would be nice!
+            This is a recreation of LB Compare. Any bugs or feature suggestions can be sent to 
+            Discord username: <span className="text-[#00E054]">nigelllj</span>.
           </p>
         </footer>
       </div>
