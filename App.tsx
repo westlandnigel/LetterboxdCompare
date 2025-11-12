@@ -114,8 +114,8 @@ const App: React.FC = () => {
         
         <footer className="text-center mt-12 text-xs text-gray-500">
           <p>
-            This is a recreation of LB Compare. Any bugs or feature suggestions can be sent to 
-            Discord username: <span className="text-[#00E054]">nigelllj</span>.
+            For feature/bugs send a message to my Discord: <span className="text-[#00E054]">nigelllj</span>. 
+            I won't ask for any donations for this app, but a follow on my Letterboxd account: <a href="https://letterboxd.com/nigelllj/" target="_blank" rel="noopener noreferrer" className="text-[#00E054] hover:underline">nigelllj</a> would be appreciated.
           </p>
         </footer>
       </div>
