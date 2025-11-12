@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { runComparison, runBothSeenComparison } from './services/letterboxdScraper';
 import type { UserAMovie, SharedMovie, ProgressUpdate } from './types';
@@ -115,6 +116,9 @@ const App: React.FC = () => {
         <footer className="text-center mt-12 text-xs text-gray-500">
           <p>
             For feature/bugs send a message to my Discord: <span className="text-[#00E054]">nigelllj</span>.
+          </p>
+          <p className="mt-1">
+            I appreciate a follow on my Letterboxd account: <a href="https://letterboxd.com/nigelllj/" target="_blank" rel="noopener noreferrer" className="text-[#00E054] hover:underline">nigelllj</a>.
           </p>
         </footer>
       </div>
