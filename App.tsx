@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { runComparison, runBothSeenComparison } from './services/letterboxdScraper';
 import type { UserAMovie, SharedMovie, ProgressUpdate } from './types';
@@ -115,7 +114,7 @@ const App: React.FC = () => {
         
         <footer className="text-center mt-12 text-xs text-gray-400">
           <p>
-            <a href="https://discord.gg/45zmG8QF" target="_blank" rel="noopener noreferrer" className="underline text-gray-300 hover:text-[#00E054] transition-colors">
+            <a href="https://discord.gg/BGeKzF8nmE" target="_blank" rel="noopener noreferrer" className="underline text-gray-300 hover:text-[#00E054] transition-colors">
               Powered by: Letterboxd's Horror Ghouls 👻 Discord
             </a>
           </p>
