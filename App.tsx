@@ -113,9 +113,11 @@ const App: React.FC = () => {
           )}
         </main>
         
-        <footer className="text-center mt-12 text-xs text-gray-500">
+        <footer className="text-center mt-12 text-xs text-gray-400">
           <p>
-            For feature/bugs send a message to my Discord: <span className="text-[#00E054]">nigelllj</span>.
+            <a href="https://discord.gg/45zmG8QF" target="_blank" rel="noopener noreferrer" className="underline text-gray-300 hover:text-[#00E054] transition-colors">
+              Powered by: Letterboxd's Horror Ghouls 👻 Discord
+            </a>
           </p>
         </footer>
       </div>
