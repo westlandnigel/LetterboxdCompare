@@ -117,9 +117,6 @@ const App: React.FC = () => {
           <p>
             For feature/bugs send a message to my Discord: <span className="text-[#00E054]">nigelllj</span>.
           </p>
-          <p className="mt-1">
-            I appreciate a follow on my Letterboxd account: <a href="https://letterboxd.com/nigelllj/" target="_blank" rel="noopener noreferrer" className="text-[#00E054] hover:underline">nigelllj</a>.
-          </p>
         </footer>
       </div>
     </div>
