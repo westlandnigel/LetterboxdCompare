@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { runComparison, runBothSeenComparison } from './services/letterboxdScraper';
 import type { UserAMovie, SharedMovie, ProgressUpdate } from './types';
 import ComparisonForm from './components/ComparisonForm';
@@ -17,6 +17,19 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressUpdate | null>(null);
+  const initialComparisonRan = useRef(false);
+
+  useEffect(() => {
+    // This effect runs once on mount to parse usernames from the URL path.
+    const path = window.location.pathname;
+    const match = path.match(/^\/([\w-]+)\/vs\/([\w-]+)\/?$/);
+    if (match) {
+      const [, userAFromUrl, userBFromUrl] = match;
+      setUserA(userAFromUrl);
+      setUserB(userBFromUrl);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount.
+
 
   const handleCompare = useCallback(async () => {
     if (!userA || !userB) {
@@ -59,6 +72,15 @@ const App: React.FC = () => {
       setProgress(null);
     }
   }, [userA, userB, selectedGenre, comparisonMode]);
+
+  useEffect(() => {
+    // This effect triggers the comparison automatically if usernames were populated from the URL.
+    // The ref ensures it only runs once on the initial load and not on subsequent username changes.
+    if (userA && userB && !initialComparisonRan.current) {
+      initialComparisonRan.current = true;
+      handleCompare();
+    }
+  }, [userA, userB, handleCompare]);
 
   return (
     <div className="min-h-screen bg-[#14181C] text-[#9ab] font-sans">
