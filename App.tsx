@@ -17,7 +17,9 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressUpdate | null>(null);
-  const initialComparisonRan = useRef(false);
+  const [shouldAutoRun, setShouldAutoRun] = useState(false);
+  const hasAutoRun = useRef(false);
+
 
   useEffect(() => {
     // This effect runs once on mount to parse usernames from the URL path.
@@ -27,6 +29,7 @@ const App: React.FC = () => {
       const [, userAFromUrl, userBFromUrl] = match;
       setUserA(userAFromUrl);
       setUserB(userBFromUrl);
+      setShouldAutoRun(true); // Signal that we should run the comparison automatically.
     }
   }, []); // Empty dependency array ensures this runs only once on mount.
 
@@ -74,13 +77,13 @@ const App: React.FC = () => {
   }, [userA, userB, selectedGenre, comparisonMode]);
 
   useEffect(() => {
-    // This effect triggers the comparison automatically if usernames were populated from the URL.
-    // The ref ensures it only runs once on the initial load and not on subsequent username changes.
-    if (userA && userB && !initialComparisonRan.current) {
-      initialComparisonRan.current = true;
+    // This effect triggers the comparison automatically only if the flag is set from the URL load.
+    // The ref ensures it only runs once and not on subsequent username changes.
+    if (shouldAutoRun && !hasAutoRun.current) {
+      hasAutoRun.current = true;
       handleCompare();
     }
-  }, [userA, userB, handleCompare]);
+  }, [shouldAutoRun, handleCompare]);
 
   return (
     <div className="min-h-screen bg-[#14181C] text-[#9ab] font-sans">
