@@ -197,58 +197,29 @@ export const runComparison = async (
   genre: string, // New genre parameter
   onProgress: (update: ProgressUpdate) => void
 ): Promise<UserAMovie[]> => {
-  const genrePathSegment = genre === 'any' ? '' : `/genre/${genre}`;
+  // Step 1: Scrape User A's rated films.
+  const userAMovies = await scrapeUserPages(
+    userA,
+    'films/by/entry-rating',
+    parseUserARatings,
+    onProgress,
+    `Scraping ${userA}'s rated films...`,
+    genre
+  );
 
-  // Step 1: Scrape User A's rated films, showing its own progress bar.
-  // The firstPageDoc is not needed here as it's the first call.
-  const userAMovies = await scrapeUserPages(userA, 'films/by/entry-rating', parseUserARatings, onProgress, `Scraping ${userA}'s rated films...`, genre);
-
-  // Step 2: Prepare for User B. Get total page counts for a combined progress bar.
-  onProgress({ user: userB, message: `Analyzing ${userB}'s library...`, currentPage: 0, totalPages: 0 });
-  
-  const userBWatchedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePathSegment}/page/1/`;
-  const userBRatedFirstPageUrl = `${BASE_URL}/${userB}/films${genrePathSegment}/by/entry-rating/page/1/`;
-  
-  const [watchedFirstPageDoc, ratedFirstPageDoc] = await Promise.all([
-      fetchPage(userBWatchedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePathSegment}/`)),
-      fetchPage(userBRatedFirstPageUrl).catch(() => fetchPage(`${BASE_URL}/${userB}/films${genrePathSegment}/by/entry-rating/`))
-  ]);
-  
-  const totalWatchedPages = getLastPage(watchedFirstPageDoc);
-  const totalRatedPages = getLastPage(ratedFirstPageDoc);
-  const totalBPages = totalWatchedPages + totalRatedPages;
-
-  // Step 3: Scrape User B's watched films, contributing to the first part of the combined progress bar.
+  // Step 2: Scrape User B's watched films. This is sufficient because any rated film is also a watched film.
   const userBWatchedUrls = await scrapeUserPages(
     userB,
     'films',
     parseUserBFilms,
     onProgress,
     `Scraping ${userB}'s watched films...`,
-    genre, // Pass genre
-    {
-      firstPageDoc: watchedFirstPageDoc,
-      progressOverride: { totalPages: totalBPages, pageOffset: 0 }
-    }
+    genre
   );
 
-  // Step 4: Scrape User B's rated films, contributing to the second part of the combined progress bar.
-  const userBRatedUrls = await scrapeUserPages(
-    userB,
-    'films/by/entry-rating',
-    parseUserBFilms,
-    onProgress,
-    `Scraping ${userB}'s rated films...`,
-    genre, // Pass genre
-    {
-      firstPageDoc: ratedFirstPageDoc,
-      progressOverride: { totalPages: totalBPages, pageOffset: totalWatchedPages }
-    }
-  );
-
-  // Step 5: Compare and sort
+  // Step 3: Compare and sort
   onProgress({ user: '', message: 'Comparing libraries...', currentPage: 0, totalPages: 0 });
-  const userBUrlSet = new Set([...userBWatchedUrls, ...userBRatedUrls]);
+  const userBUrlSet = new Set(userBWatchedUrls);
   const recommendations: UserAMovie[] = userAMovies.filter(movie => !userBUrlSet.has(movie.url));
   recommendations.sort((a, b) => b.rating - a.rating || a.title.localeCompare(b.title));
 
