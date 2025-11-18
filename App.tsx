@@ -139,13 +139,13 @@ const App: React.FC = () => {
         
         <footer className="text-center mt-12 text-xs text-gray-400">
           <p className="mb-2">
-            For suggestions or bug reports, email <a href="mailto:nigel@westlandj.nl" className="underline text-[#00E054] hover:text-green-400 transition-colors">
-              nigel@westlandj.nl
-            </a>.
+            <a href="https://letterboxd.com/nigelllj/" target="_blank" rel="noopener noreferrer" className="underline text-[#00E054] hover:text-green-400 transition-colors">
+              Created by Letterboxd user: nigelllj
+            </a>
           </p>
           <p>
-            I would appreciate a follow on my Letterboxd account: <a href="https://letterboxd.com/nigelllj/" target="_blank" rel="noopener noreferrer" className="underline text-[#00E054] hover:text-green-400 transition-colors">
-              nigelllj
+            For suggestions or bug reports, email <a href="mailto:nigel@westlandj.nl" className="underline text-[#00E054] hover:text-green-400 transition-colors">
+              nigel@westlandj.nl
             </a>.
           </p>
         </footer>
