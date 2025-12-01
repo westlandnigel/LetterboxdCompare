@@ -144,7 +144,7 @@ const App: React.FC = () => {
             </a>.
           </p>
           <a
-            href="https://letterboxd.com/nigelllj/"
+            href="https://letterboxd.com/LegacySlasher/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center space-x-2 text-white group"
@@ -154,7 +154,7 @@ const App: React.FC = () => {
               alt="Letterboxd" 
               className="w-5 h-5" 
             />
-            <span className="underline decoration-1 underline-offset-2">Created by Letterboxd user Nigelllj</span>
+            <span className="underline decoration-1 underline-offset-2">Created by Letterboxd user LegacySlasher</span>
           </a>
         </footer>
       </div>
