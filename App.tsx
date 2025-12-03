@@ -143,19 +143,6 @@ const App: React.FC = () => {
               nigeljww@gmail.com
             </a>.
           </p>
-          <a
-            href="https://letterboxd.com/LegacySlasher/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center space-x-2 text-white group"
-          >
-            <img 
-              src="https://a.ltrbxd.com/logos/letterboxd-decal-dots-neg-rgb.svg" 
-              alt="Letterboxd" 
-              className="w-5 h-5" 
-            />
-            <span className="underline decoration-1 underline-offset-2">Created by Letterboxd user LegacySlasher</span>
-          </a>
         </footer>
       </div>
     </div>
