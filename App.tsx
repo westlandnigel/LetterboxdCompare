@@ -138,11 +138,22 @@ const App: React.FC = () => {
         </main>
         
         <footer className="text-center mt-12 text-xs text-gray-400 pb-8">
-          <p className="mb-2">
-            For suggestions or bug reports, <a href="mailto:nigeljww@gmail.com" className="underline text-[#00E054] hover:text-green-400 transition-colors">
-              nigeljww@gmail.com
+          <p className="mb-3">
+            For suggestions or bug reports, <a href="mailto:nigel@westlandj.nl" className="underline text-[#00E054] hover:text-green-400 transition-colors">
+              nigel@westlandj.nl
             </a>.
           </p>
+          <a
+            href="https://www.paypal.com/donate/?hosted_button_id=MBWEGPZNWN7JL"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-2 bg-[#2C3440] hover:bg-[#3e4a5b] text-gray-300 hover:text-white px-3 py-1.5 rounded-full text-xs font-medium transition-colors border border-[#445566]"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-[#00E054]">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+            <span>Donate via PayPal</span>
+          </a>
         </footer>
       </div>
     </div>
